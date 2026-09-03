@@ -1,30 +1,58 @@
+<div align="center">
+
 # SignalGuard
 
-**An AI decision trust layer for payment systems.**
+### An AI decision trust layer for payment systems.
 
-Built for the **Razorpay AI Buildathon 2026**.
+**AI confidence is not the same as decision reliability.**
+SignalGuard independently scores whether a payment model's decision can actually be trusted — and proves it with counterfactual testing, not just a confidence number.
 
-> **AI confidence is not the same as decision reliability.**
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](requirements.txt)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.112+-009688?style=flat-square&logo=fastapi&logoColor=white)](backend/main.py)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.5+-F7931E?style=flat-square&logo=scikitlearn&logoColor=white)](backend/models/risk_model.py)
+[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square&logo=react&logoColor=white)](frontend/package.json)
+[![Gemini](https://img.shields.io/badge/Gemini-2.5--flash-4285F4?style=flat-square&logo=googlegemini&logoColor=white)](backend/signalguard/investigator.py)
+[![Buildathon](https://img.shields.io/badge/Razorpay-AI%20Buildathon%202026-0C2451?style=flat-square)](#project)
+
+</div>
+
+<br>
+
+<div align="center">
+
+| 50,000 | 0.748 | 36.4% | 83.06 | 16,780 |
+|:---:|:---:|:---:|:---:|:---:|
+| transactions evaluated | risk model ROC-AUC | decisions that flip under a ±1σ nudge | average trust score | flagged for human review |
+
+</div>
+
+<br>
 
 A payment risk model can output `DECLINE — 71%` and sound certain. But that number alone doesn't tell you whether the decision behind it is actually *reliable* — or whether it would collapse the moment one input shifted slightly. SignalGuard sits alongside a payment risk model as an independent layer that scores exactly that: how much the decision itself can be trusted, not whether the transaction is fraudulent.
 
-SignalGuard is **not a fraud detector.** It does not decide APPROVE/REVIEW/DECLINE. The underlying risk model does that. SignalGuard's only job is to independently evaluate whether that decision deserves to be acted on as-is.
+> **SignalGuard is not a fraud detector.** It does not decide APPROVE/REVIEW/DECLINE — the underlying risk model does that. SignalGuard's only job is to independently evaluate whether that decision deserves to be acted on as-is.
 
-```
-ML Decision  →  SignalGuard  →  Trust Score (0–100)  →  PROCEED / REVIEW / FALLBACK
-```
+<div align="center">
+
+**`ML Decision`** → **`SignalGuard`** → **`Trust Score (0–100)`** → **`PROCEED`** / **`REVIEW`** / **`FALLBACK`**
+
+</div>
 
 ### The five trust dimensions
 
 | Dimension | What it checks |
 |---|---|
-| **Data Quality** | Is the data behind the decision complete and sane? |
-| **Drift Health** | Has this transaction's pattern shifted from what's normal? |
-| **Signal Consistency** | Are the risk signals contradicting each other? |
-| **Model Confidence** | How far is the model's probability from a coin flip? |
-| **Decision Robustness** | Would the decision survive a small, realistic change to its inputs? |
+| 🗂️ **Data Quality** | Is the data behind the decision complete and sane? |
+| 📉 **Drift Health** | Has this transaction's pattern shifted from what's normal? |
+| ⚖️ **Signal Consistency** | Are the risk signals contradicting each other? |
+| 🎯 **Model Confidence** | How far is the model's probability from a coin flip? |
+| 🔁 **Decision Robustness** | Would the decision survive a small, realistic change to its inputs? |
 
 Decision Robustness — powered by controlled **counterfactual testing** — is SignalGuard's core differentiator and is explained in detail below.
+
+### Contents
+
+[How It Works](#how-it-works) · [Why SignalGuard?](#why-signalguard) · [Results](#results) · [Tech Stack](#tech-stack) · [API](#api) · [Project Structure](#project-structure) · [How to Run](#how-to-run) · [Security](#security) · [Limitations](#limitations) · [Future Work](#future-work)
 
 ---
 
@@ -128,10 +156,12 @@ Trust Score = 0.20 × Data Quality
 **Decision Robustness carries the heaviest weight (25%) deliberately.** A decision that flips under a small, realistic nudge is the clearest possible signal that a model's stated confidence was hollow — more diagnostic than any single static signal, because it tests the decision's actual behavior rather than just its inputs.
 
 | Score | Level | Action |
-|---|---|---|
-| 80–100 | **HIGH_TRUST** | **PROCEED** — no incident logged |
-| 50–79 | **MEDIUM_TRUST** | **REVIEW** — incident logged, evidence collected |
-| 0–49 | **LOW_TRUST** | **FALLBACK** — incident logged, routed for safe handling |
+|:---:|---|---|
+| 80–100 | 🟢 **HIGH_TRUST** | **PROCEED** — no incident logged |
+| 50–79 | 🟡 **MEDIUM_TRUST** | **REVIEW** — incident logged, evidence collected |
+| 0–49 | 🔴 **LOW_TRUST** | **FALLBACK** — incident logged, routed for safe handling |
+
+*(Colors mirror the actual dashboard UI: green / amber / red per trust level.)*
 
 ### 3. Counterfactual testing — the core differentiator
 
@@ -242,12 +272,16 @@ Over a third of all transactions in the dataset have a decision that changes und
 ### Trust distribution
 
 | Level | Count | % | Action |
-|---|---|---|---|
-| **HIGH_TRUST** | 33,220 | 66.4% | PROCEED |
-| **MEDIUM_TRUST** | 16,774 | 33.5% | REVIEW |
-| **LOW_TRUST** | 6 | 0.01% | FALLBACK |
+|---|---:|---:|---|
+| 🟢 **HIGH_TRUST** | 33,220 | 66.4% | PROCEED |
+| 🟡 **MEDIUM_TRUST** | 16,774 | 33.5% | REVIEW |
+| 🔴 **LOW_TRUST** | 6 | 0.01% | FALLBACK |
 
-**Transactions evaluated:** 50,000 &nbsp;·&nbsp; **Flagged for human attention:** 16,780 &nbsp;·&nbsp; **Average trust score:** 83.06
+<div align="center">
+
+**Transactions evaluated:** `50,000` &nbsp;·&nbsp; **Flagged for human attention:** `16,780` &nbsp;·&nbsp; **Average trust score:** `83.06`
+
+</div>
 
 `LOW_TRUST` is intentionally rare by design — SignalGuard only recommends full fallback when data quality, drift, signal consistency, model confidence, *and* decision robustness all degrade together on the same transaction. That's a genuine tail event, not a threshold set to be permissive. All 6 cases in this dataset came from `COMBINED_INCIDENT` and `LATENCY_ANOMALY` scenarios.
 
@@ -421,4 +455,10 @@ Realistic next steps for moving this from a buildathon project toward production
 
 ## Project
 
+<div align="center">
+
 Built for the **Razorpay AI Buildathon 2026**.
+
+*A decision trust layer, not a fraud detector — five transparent checks, one deterministic score, and a mechanical test of whether the decision holds up.*
+
+</div>
