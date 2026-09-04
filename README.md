@@ -52,24 +52,29 @@ Decision Robustness — powered by controlled **counterfactual testing** — is 
 
 ### Contents
 
-[How It Works](#how-it-works) · [Why SignalGuard?](#why-signalguard) · [Results](#results) · [Tech Stack](#tech-stack) · [API](#api) · [Project Structure](#project-structure) · [How to Run](#how-to-run) · [Security](#security) · [Limitations](#limitations) · [Future Work](#future-work)
+[Product Preview](#product-preview) · [How It Works](#how-it-works) · [Why SignalGuard?](#why-signalguard) · [Results](#results) · [Tech Stack](#tech-stack) · [API](#api) · [Project Structure](#project-structure) · [How to Run](#how-to-run) · [Security](#security) · [Limitations](#limitations) · [Future Work](#future-work)
 
 ---
 
 ## Product Preview
 
-*Screenshots go here once captured — see "Things I still need to provide" below.*
+The dashboard provides a visual view of transaction trust, incident evidence, counterfactual robustness, and AI-assisted investigation.
 
-| Screenshot | Suggested filename | Shows |
-|---|---|---|
-| Main dashboard | `docs/dashboard.png` | Trust score distribution, incident volume |
-| Trust Score breakdown | `docs/trust-score.png` | The 5 component scores for one transaction |
-| Incident / evidence detail | `docs/incident-detail.png` | Full evidence trail behind a REVIEW/FALLBACK incident |
-| Counterfactual flip | `docs/counterfactual-flip.png` | Original vs. nudged decision side by side |
-| Gemini investigation | `docs/gemini-investigation.png` | The AI-generated plain-language explanation |
+### Dashboard
 
-> Place image files at the paths above once available; this table is a placeholder and none of these files currently exist in the repository.
+![SignalGuard Dashboard](docs/dashboard.png)
 
+### Trust Score Breakdown
+
+![Trust Score Breakdown](docs/trust-score.png)
+
+### Counterfactual Decision Flip
+
+![Counterfactual Decision Flip](docs/counterfactual-flip.png)
+
+### Gemini Investigation
+
+![Gemini Investigation](docs/gemini-investigation.png)
 ---
 
 ## Architecture
@@ -116,8 +121,6 @@ Decision Robustness — powered by controlled **counterfactual testing** — is 
                                          ▼
                     Explanation + Evidence Trail + Audit Record
 ```
-
-*A polished visual version of this diagram would go at `docs/architecture.png` (not yet created — see "Things I still need to provide"). The ASCII diagram above is accurate to the implementation and can stay as a fallback either way.*
 
 ---
 
@@ -350,7 +353,7 @@ signalguard/
 │       └── main.jsx
 ├── data/
 │   └── transactions.csv
-├── docs/                     # screenshots/diagrams go here — currently empty
+├── docs/                     # product screenshots
 ├── notebooks/                # currently empty
 └── requirements.txt
 ```
@@ -436,8 +439,6 @@ python generate_data.py
 - **SignalGuard does not replace the payment risk model.** It makes no payment decision itself — it only assesses whether an existing decision should be trusted as-is.
 - **Counterfactual nudges are single-feature.** Real fragile decisions can also emerge from correlated multi-feature shifts, which this implementation doesn't test directly.
 - **Drift baseline is static per run**, computed once at backend startup from the NORMAL-labeled rows in the historical dataset. In production this would need periodic recomputation as "normal" traffic genuinely evolves over time.
-- **`docs/` and `notebooks/` are currently empty** in this repository — placeholders for screenshots/diagrams and exploratory analysis, not yet populated.
-
 ---
 
 ## Future Work
